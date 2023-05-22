@@ -1,0 +1,146 @@
+---
+title: 'TCVD Práctica 2: ¿Cómo realizar la limpieza y análisis de datos?'
+author: 
+   Alfonso Manuel Carvajal, Eider Ibiricu
+date: '`r format(Sys.Date(),"%e de %B, %Y")`'
+output: 
+  pdf_document:
+    number_sections: yes
+    toc: no
+    df_print: "kable"
+bibliography: references.bib
+nocite: |
+  @manualUOC, @awesome_tables, @RMarkdownCookbook, @ggplot2
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(
+  echo = TRUE,
+  warning = FALSE,
+  message = FALSE,
+  fig.align = 'center',
+  fig.pos = "H",
+  tidy.opts = list(width.cutoff = 60),
+  tidy = FALSE
+  )
+
+kable_setup <- function(df){
+  df %>% kable( "latex", booktabs = T) %>%
+  kable_styling(latex_options = c(
+    "striped",
+    "HOLD_position"))
+}
+```
+
+
+```{r libraries, message=FALSE, include=FALSE}
+if(!require('ggplot2')) install.packages('ggplot2'); library('ggplot2')
+if(!require('formatR')) install.packages('formatR'); library('formatR')
+if(!require('devtools')) install.packages('devtools'); library('devtools')
+if(!require('kaggler')) devtools::install_github("ldurazo/kaggler")
+```
+# Descripción del dataset
+
+El dataset *Heart Attack Analysis & Prediction* [kaggle](https://www.kaggle.com/datasets/rashikrahmanpritom/heart-attack-analysis-prediction-dataset) 
+
+```{r download_data, message= FALSE, warning=FALSE}
+#https://medium.com/mcd-unison/how-to-use-kaggle-api-to-download-datasets-in-r-312179c7a99c
+
+library(readr)
+library(kaggler)
+kgl_auth(creds_file = 'kaggle.json')
+response <- kgl_datasets_download_all(owner_dataset =
+            "rashikrahmanpritom/heart-attack-analysis-prediction-dataset")
+
+download.file(response[["url"]], "data/temp.zip", mode="wb")
+unzip_result <- unzip("data/temp.zip", exdir = "data/", overwrite = TRUE)
+unzip_result
+heart_attack_data <- read_csv("data/heart.csv")
+o2_saturation_data <- read.csv("data/o2Saturation.csv",header=F)
+
+rm(response)
+```
+Las variables que encontramos en el dataset, según la descripción en *kaggle*:
+
+
+- **Age**: Age of the patient
+
+- **Sex**: Sex of the patient
+
+- **exang**: exercise induced angina (1 = yes; 0 = no)
+
+- **ca**: number of major vessels (0-3)
+
+- **cp**: Chest Pain type chest pain type
+
+    - Value 1: typical angina
+    
+    - Value 2: atypical angina
+    
+    - Value 3: non-anginal pain
+    
+    - Value 4: asymptomatic
+- **trtbps**: resting blood pressure (in mm Hg)
+
+- **chol**: cholestoral in mg/dl fetched via BMI sensor
+
+- **fbs**: (fasting blood sugar > 120 mg/dl) (1 = true; 0 = false)
+
+- **rest_ecg**: resting electrocardiographic results
+
+    - Value 0: normal
+    
+    - Value 1: having ST-T wave abnormality (T wave inversions and/or ST elevation or depression of > 0.05 mV)
+    
+    - Value 2: showing probable or definite left ventricular hypertrophy by Estes' criteria
+- **thalach**: maximum heart rate achieved
+
+- **output**: 0= less chance of heart attack 1= more chance of heart attack
+
+¿Por qué es importante y qué pregunta/problema
+pretende responder?
+
+# Integración y selección de los datos de interés a analizar. 
+
+Puede ser el resultado de adicionar diferentes datasets o una subselección útil de los datos
+originales, en base al objetivo que se quiera conseguir.
+
+# Limpieza de los datos
+
+## ¿Los datos contienen ceros o elementos vacíos? Gestiona cada uno de
+estos casos.
+
+## Identifica y gestiona los valores extremos.
+
+# Análisis de los datos
+
+## Selección de los grupos de datos que se quieren analizar/comparar (p.
+ej., si se van a comparar grupos de datos, ¿cuáles son estos grupos y
+qué tipo de análisis se van a aplicar?)
+
+## Comprobación de la normalidad y homogeneidad de la varianza.
+
+## Aplicación de pruebas estadísticas para comparar los grupos de datos.
+En función de los datos y el objetivo del estudio, aplicar pruebas de
+contraste de hipótesis, correlaciones, regresiones, etc. Aplicar al menos
+tres métodos de análisis diferentes.
+
+# Representación de los resultados a partir de tablas y gráficas.
+
+Este apartado se puede responder a lo largo de la práctica, sin necesidad de concentrar todas
+las representaciones en este punto de la práctica.
+
+# Resolución del problema. 
+
+A partir de los resultados obtenidos, ¿cuáles son
+las conclusiones? ¿Los resultados permiten responder al problema?
+
+# Código. 
+
+Hay que adjuntar el código, preferiblemente en R, con el que se ha
+realizado la limpieza, análisis y representación de los datos. Si lo preferís,
+también podéis trabajar en Python.
+
+# Vídeo.
+
+
