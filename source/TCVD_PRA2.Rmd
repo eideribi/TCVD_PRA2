@@ -28,13 +28,18 @@ kable_setup <- function(df){
   df %>% kable( "latex", booktabs = T) %>%
   kable_styling(latex_options = c(
     "striped",
-    "HOLD_position"))
+    "HOLD_position",
+    "scale_down"))
 }
 ```
 
 
 ```{r libraries, message=FALSE, include=FALSE}
 if(!require('ggplot2')) install.packages('ggplot2'); library('ggplot2')
+if(!require('tidyr')) install.packages('tidyr'); library('tidyr')
+if(!require('dplyr')) install.packages('dplyr'); library('dplyr')
+if(!require('kableExtra')) install.packages('kableExtra'); library('kableExtra')
+if(!require('gridExtra')) install.packages('gridExtra'); library('gridExtra')
 if(!require('formatR')) install.packages('formatR'); library('formatR')
 if(!require('devtools')) install.packages('devtools'); library('devtools')
 if(!require('kaggler')) devtools::install_github("ldurazo/kaggler")
@@ -63,15 +68,11 @@ rm(response)
 Las variables que encontramos en el dataset, según la descripción en *kaggle*:
 
 
-- **Age**: Age of the patient
+- **Age**: Age of the patient (numeric)
 
-- **Sex**: Sex of the patient
+- **Sex**: Sex of the patient (0 = male; 1 = female; categoric)
 
-- **exang**: exercise induced angina (1 = yes; 0 = no)
-
-- **ca**: number of major vessels (0-3)
-
-- **cp**: Chest Pain type chest pain type
+- **cp**: Chest Pain type chest pain type (categorical)
 
     - Value 1: typical angina
     
@@ -80,23 +81,55 @@ Las variables que encontramos en el dataset, según la descripción en *kaggle*:
     - Value 3: non-anginal pain
     
     - Value 4: asymptomatic
-- **trtbps**: resting blood pressure (in mm Hg)
 
-- **chol**: cholestoral in mg/dl fetched via BMI sensor
+- **trtbps**: resting blood pressure (in mm Hg) (numerical)
 
-- **fbs**: (fasting blood sugar > 120 mg/dl) (1 = true; 0 = false)
+- **chol**: cholestoral in mg/dl fetched via BMI sensor (numerical)
 
-- **rest_ecg**: resting electrocardiographic results
+- **fbs**: (fasting blood sugar > 120 mg/dl) (1 = true; 0 = false; categorical)
+
+- **restecg**: resting electrocardiographic results (categorical)
 
     - Value 0: normal
     
     - Value 1: having ST-T wave abnormality (T wave inversions and/or ST elevation or depression of > 0.05 mV)
     
     - Value 2: showing probable or definite left ventricular hypertrophy by Estes' criteria
-- **thalach**: maximum heart rate achieved
 
-- **output**: 0= less chance of heart attack 1= more chance of heart attack
+- **thalachh**: maximum heart rate achieved
 
+- **exng**: exercise induced angina (1 = yes; 0 = no; categoric)
+
+- **oldpeak**: Previous peak, changes in the ST segment on an ECG
+
+- **slp**: The Slope of The Peak Exercise ST Segment
+
+- **caa**: number of major vessels (0-4) (integer)
+
+- **thall**: maximum heart rate achieved (numerical)
+
+- **output**: 0= less chance of heart attack 1= more chance of heart attack (categorical)
+
+```{r}
+# Data types
+
+data <- heart_attack_data %>% 
+  mutate(
+    sex = factor(sex, levels=c(0,1),labels = c("male","female")),
+    cp = factor(cp,
+                levels=c(0,1,2,3),
+                labels=c("typical angina","atypical angina","non-anginal pain","asymptomatic")),
+    fbs = factor(fbs,levels=c(0,1),labels = c(F,T)),
+    restecg = factor(restecg,levels = c(0,1,2),
+                     labels = c("normal","ST-T wave abnormality","left ventricular hypertrophy")),
+    exng = factor(exng),
+    slp = factor(slp,levels = c(0,1,2),
+                 labels = c("unsloping","flat","downsloping")),
+    caa = as.integer(caa),
+    output = factor(output,levels=c(0,1),
+                    labels = c("less chance of heart attack","more chance of heart attack"))
+  )
+```
 ¿Por qué es importante y qué pregunta/problema
 pretende responder?
 
@@ -105,19 +138,77 @@ pretende responder?
 Puede ser el resultado de adicionar diferentes datasets o una subselección útil de los datos
 originales, en base al objetivo que se quiera conseguir.
 
+```{r}
+head(data) %>% 
+  kable_setup %>% 
+  kable_paper(full_width = F)%>% 
+  column_spec(c(3,7,14), width = "2 cm") %>%
+  column_spec(c(1,5,9,12,13), width = "0.8 cm") %>% 
+  row_spec(0,bold=TRUE)
+```
 # Limpieza de los datos
 
+https://www.kaggle.com/code/tumpanjawat/heart-attack-eda-cluster-8-ml-models
+```{r}
+# Summary
+summary(data) 
+
+# Duplicates
+data %>% 
+  unique() %>% 
+  nrow()
+
+data <- data %>% 
+  unique()
+
+```
 ## ¿Los datos contienen ceros o elementos vacíos? Gestiona cada uno de
 estos casos.
+```{r}
+for(col in colnames(data)){
+  print(paste0("Num. of Nas in ",col,": ", length(which(is.na(data$col)))))
+}
+```
 
 ## Identifica y gestiona los valores extremos.
+Distribución de las variables numéricas:
+```{r}
+data_num <- data %>% 
+  select_if(is.numeric)
+data_num %>% 
+pivot_longer(colnames(data_num)) %>% 
+  as.data.frame() %>% 
+  ggplot(aes(x = value)) +    # Draw each column as histogram
+  geom_histogram() + 
+  facet_wrap(~ name, scales = "free")
 
+# Boxplots
+data_num %>% 
+pivot_longer(colnames(data_num)) %>% 
+  as.data.frame() %>% 
+  ggplot(aes(y = value)) +    # Draw each column as histogram
+  geom_boxplot(fill = "#404080") + 
+  theme_minimal() +
+  facet_wrap(~ name, scales = "free")
+
+
+boxplot.stats(data_num$oldpeak)$out
+
+```
 # Análisis de los datos
 
 ## Selección de los grupos de datos que se quieren analizar/comparar (p.
 ej., si se van a comparar grupos de datos, ¿cuáles son estos grupos y
 qué tipo de análisis se van a aplicar?)
+```{r}
 
+data_cat <- data %>% 
+  select_if(~class(.) == 'factor')
+
+# Barplots
+
+
+```
 ## Comprobación de la normalidad y homogeneidad de la varianza.
 
 ## Aplicación de pruebas estadísticas para comparar los grupos de datos.
