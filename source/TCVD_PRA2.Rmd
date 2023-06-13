@@ -46,7 +46,10 @@ if(!require('kaggler')) devtools::install_github("ldurazo/kaggler")
 ```
 # Descripción del dataset
 
-El dataset *Heart Attack Analysis & Prediction* [kaggle](https://www.kaggle.com/datasets/rashikrahmanpritom/heart-attack-analysis-prediction-dataset) 
+El dataset *Heart Attack Analysis & Prediction* [kaggle](https://www.kaggle.com/datasets/rashikrahmanpritom/heart-attack-analysis-prediction-dataset) contiene datos para realizar una clasificación de pacientes que tengan riesgo de sufrir un ataque al corazón. 
+
+Mediante este juego de datos es posible entrenar algoritmos que permitan un diagnóstico para futuros posibles pacientes. 
+
 
 ```{r download_data, message= FALSE, warning=FALSE}
 #https://medium.com/mcd-unison/how-to-use-kaggle-api-to-download-datasets-in-r-312179c7a99c
@@ -70,7 +73,7 @@ Las variables que encontramos en el dataset, según la descripción en *kaggle*:
 
 - **Age**: Age of the patient (numeric)
 
-- **Sex**: Sex of the patient (0 = male; 1 = female; categoric)
+- **Sex**: Sex of the patient (1 = male; 0 = female; categoric)
 
 - **cp**: Chest Pain type chest pain type (categorical)
 
@@ -115,7 +118,7 @@ Las variables que encontramos en el dataset, según la descripción en *kaggle*:
 
 data <- heart_attack_data %>% 
   mutate(
-    sex = factor(sex, levels=c(0,1),labels = c("male","female")),
+    sex = factor(sex, levels=c(1,0),labels = c("male","female")),
     cp = factor(cp,
                 levels=c(0,1,2,3),
                 labels=c("typical angina","atypical angina","non-anginal pain","asymptomatic")),
@@ -173,15 +176,6 @@ for(col in colnames(data)){
 ## Identifica y gestiona los valores extremos.
 Distribución de las variables numéricas:
 ```{r}
-data_num <- data %>% 
-  select_if(is.numeric)
-data_num %>% 
-pivot_longer(colnames(data_num)) %>% 
-  as.data.frame() %>% 
-  ggplot(aes(x = value)) +    # Draw each column as histogram
-  geom_histogram() + 
-  facet_wrap(~ name, scales = "free")
-
 # Boxplots
 data_num %>% 
 pivot_longer(colnames(data_num)) %>% 
@@ -192,6 +186,7 @@ pivot_longer(colnames(data_num)) %>%
   facet_wrap(~ name, scales = "free")
 
 
+# outliers
 boxplot.stats(data_num$oldpeak)$out
 
 ```
@@ -200,8 +195,21 @@ boxplot.stats(data_num$oldpeak)$out
 ## Selección de los grupos de datos que se quieren analizar/comparar (p.
 ej., si se van a comparar grupos de datos, ¿cuáles son estos grupos y
 qué tipo de análisis se van a aplicar?)
-```{r, fig.height = 10}
 
+
+```{r, fig.height = 10}
+## Numerical data
+data_num <- data %>% 
+  select_if(is.numeric)
+data_num %>% 
+pivot_longer(colnames(data_num)) %>% 
+  as.data.frame() %>% 
+  ggplot(aes(x = value)) +    # Draw each column as histogram
+  geom_histogram() + 
+  facet_wrap(~ name, scales = "free")
+
+
+## Categorical data
 data_cat <- data %>% 
   select_if(~class(.) == 'factor')
 
