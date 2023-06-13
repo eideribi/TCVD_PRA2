@@ -200,13 +200,27 @@ boxplot.stats(data_num$oldpeak)$out
 ## Selección de los grupos de datos que se quieren analizar/comparar (p.
 ej., si se van a comparar grupos de datos, ¿cuáles son estos grupos y
 qué tipo de análisis se van a aplicar?)
-```{r}
+```{r, fig.height = 10}
 
 data_cat <- data %>% 
   select_if(~class(.) == 'factor')
 
 # Barplots
 
+p <- list()
+cols = colnames(data_cat)
+for(i in 1:length(cols)){
+  col = cols[i]
+  p[[i]] <- data_cat %>%
+  ggplot(aes_string(col, fill = col)) + 
+  geom_bar() + 
+  ggtitle(paste0(col," distribution")) +
+  # theme(axis.text.x = element_text(angle = 45, vjust = 0.5, hjust=1))
+    theme(axis.title.x=element_blank(),
+        axis.text.x=element_blank(),
+        axis.ticks.x=element_blank())
+}
+do.call(grid.arrange,c(p, ncol = 2))
 
 ```
 ## Comprobación de la normalidad y homogeneidad de la varianza.
