@@ -112,9 +112,9 @@ Las variables que encontramos en el dataset, según la descripción en *kaggle*:
 
 - **caa**: Número de vasos principales coloreados por fluoroscopia. (0-4) (categorical)
 
-- **thall**: maximum heart rate achieved (numerical)
+- **thall**: Talio en sangre.(Thallium Stress Test )(numerica)
 
-- **output**: 0= less chance of heart attack 1= more chance of heart attack (categorical)
+- **output**: Diagnóstico de enfermedad cardíaca (estado del objetivo) (0 = menos probabilidad de ataque al corazón, 1 = más probabilidad de ataque al corazón). (Variable categórica binaria)
 
 
 ¿Por qué es importante y qué pregunta/problema
