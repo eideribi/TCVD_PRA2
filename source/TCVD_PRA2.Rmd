@@ -125,6 +125,14 @@ pretende responder?
 Puede ser el resultado de adicionar diferentes datasets o una subselección útil de los datos
 originales, en base al objetivo que se quiera conseguir.
 
+La recopilación y elección de información constituyen etapas fundamentales en cualquier tarea de análisis de datos. En relación a nuestro conjunto de información, estos procesos significarán identificar los factores que resultan más significativos para estimar un infarto al miocardio y optar por aquellos que nos brinden la mayor utilidad en nuestra investigación.
+
+Dado que todas las variables en este conjunto de datos están directamente vinculadas a la salud cardiovascular y los riesgos asociados, todas podrían considerarse pertinentes. No obstante, puede que no todas estas variables contribuyan de la misma manera a la capacidad predictiva de un modelo de estimación de infartos al miocardio.
+
+Por ejemplo, las variables `age`, `sex`, `cp`, `trtbps`, `chol`, `fbs`, `restecg`, `thalachh`, `exng`, `oldpeak`, `slp`, `caa`, y `thall` son todos posibles factores de riesgo para un infarto al miocardio y por lo tanto son de importancia para nuestro estudio. La variable `output` es la que nos gustaría pronosticar.
+
+En consecuencia, el paso inicial en nuestro estudio será llevar a cabo un examen exploratorio de los datos para comprender de mejor manera la distribución y las relaciones de estas variables. Esto puede implicar visualizar la distribución de la información, calcular estadísticas descriptivas y analizar las correlaciones entre las diversas variables.
+
 ```{r}
 head(data) %>% 
   kable_setup %>% 
