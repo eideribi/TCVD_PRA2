@@ -43,6 +43,7 @@ if(!require('gridExtra')) install.packages('gridExtra'); library('gridExtra')
 if(!require('formatR')) install.packages('formatR'); library('formatR')
 if(!require('devtools')) install.packages('devtools'); library('devtools')
 if(!require('kaggler')) devtools::install_github("ldurazo/kaggler")
+if(!require('ggcorrplot')) install.packages('ggcorrplot'); library('ggcorrplot')
 ```
 # Descripción del dataset
 
@@ -134,11 +135,11 @@ Por ejemplo, las variables `age`, `sex`, `cp`, `trtbps`, `chol`, `fbs`, `restecg
 En consecuencia, el paso inicial en nuestro estudio será llevar a cabo un examen exploratorio de los datos para comprender de mejor manera la distribución y las relaciones de estas variables. Esto puede implicar visualizar la distribución de la información, calcular estadísticas descriptivas y analizar las correlaciones entre las diversas variables.
 
 ```{r}
-head(data) %>% 
+head(heart_attack_data) %>% 
   kable_setup %>% 
   kable_paper(full_width = F)%>% 
   column_spec(c(3,7,14), width = "2 cm") %>%
-  column_spec(c(1,5,9,12,13), width = "0.8 cm") %>% 
+  column_spec(c(1,5,9,12,13), width = "0.8 cm") %>%
   row_spec(0,bold=TRUE)
 ```
 # Limpieza de los datos
@@ -252,7 +253,8 @@ pivot_longer(colnames(data_num)) %>%
   ggplot(aes(y = value)) +    # Draw each column as histogram
   geom_boxplot(fill = "#404080", coef = 1.58) + 
   theme_minimal() +
-  facet_wrap(~ name, scales = "free")
+  facet_wrap(~ name, scales = "free") +
+  labs(title="Boxplots de variables numéricas")
 ```
 Vemos que todas las variables menos *age* muestran valores que están alejados de las medias y la mayoría de observaciones. Esta gráfica identifica como atípico el valor que $x < Q_1 - IQR\cdot 1.58$ o $x < Q_3 - IQR\cdot 1.58$ donde $IQR = Q_3 - Q_1$. La manera en la que vamos a tratarlos es asignarles el valor más cercano para que no sean considerados *outliers*.
 
@@ -278,29 +280,47 @@ pivot_longer(colnames(data_num)) %>%
   ggplot(aes(y = value)) +    # Draw each column as histogram
   geom_boxplot(fill = "#404080", coef = 1.58) + 
   theme_minimal() +
-  facet_wrap(~ name, scales = "free")
+  facet_wrap(~ name, scales = "free") +
+  labs(title="Boxplots de variables numéricas \n Outliers corregidos")
 
 ```
 
-```{r}
-
-# outliers
-boxplot.stats(data_num$oldpeak)$out
-
-```
 # Análisis de los datos
 
-## Selección de los grupos de datos que se quieren analizar/comparar (p.
-ej., si se van a comparar grupos de datos, ¿cuáles son estos grupos y
-qué tipo de análisis se van a aplicar?)
+## Selección de los grupos de datos que se quieren analizar/comparar.
 
+Lo primero que haremos será estudiar la correlación entre las variables y también la que tienen con la variable *output*.
 
-```{r, fig.height = 10}
-
-
+```{r, echo = FALSE}
+corr <- round(cor(heart_attack_data), 1)
+ggcorrplot(corr,  type = "lower",
+   lab = TRUE, p.mat = cor_pmat(heart_attack_data)) +
+  labs(title="Correlación entre variables")
 ```
-## Comprobación de la normalidad y homogeneidad de la varianza.
 
+Vemos que la variable *output* no tiene correlación significativa con *fbs* y *trtbps*, y con las que mayor correlación tiene son *caa*, *oldpeak*, *exng*, *thallachh* y *cp*.
+
+Respecto al resto de variables, vemos parejas relacionadas como *oldpeak* y *slp*, *cp* y *exng*, *age* y *thallachh*, *thallachh* y *slp*.
+
+Por otro lado, resulta curioso observar el la variable *chol* no se relaciona más que con *restecg*
+
+## Comprobación de la normalidad y homogeneidad de la varianza.
+Vamos a analizar las variables recién mencionadas, para determinar si son aptas para aplicar tests de comparación de grupos.
+
+```{r}
+data_compare <- data %>% 
+  select(
+    age,
+    cp,
+    fbs,
+    thalachh,
+    exng,
+    oldpeak,
+    slp,
+    caa
+  )
+head(data_compare)
+```
 ## Aplicación de pruebas estadísticas para comparar los grupos de datos.
 En función de los datos y el objetivo del estudio, aplicar pruebas de
 contraste de hipótesis, correlaciones, regresiones, etc. Aplicar al menos
