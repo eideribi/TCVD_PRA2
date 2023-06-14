@@ -71,11 +71,13 @@ rm(response)
 Las variables que encontramos en el dataset, según la descripción en *kaggle*:
 
 
-- **Age**: Age of the patient (numeric)
 
-- **Sex**: Sex of the patient (1 = male; 0 = female; categoric)
 
-- **cp**: Chest Pain type chest pain type (categorical)
+- **Age**: Edad del individuo. (Variable numérica continua)
+
+- **Sex**: Género del individuo (1 = masculino, 0 = femenino). (Variable categórica binaria)
+
+- **cp**: Tipo de dolor en el pecho (categorica ordinal)
 
     - Value 1: typical angina
     
@@ -85,13 +87,14 @@ Las variables que encontramos en el dataset, según la descripción en *kaggle*:
     
     - Value 4: asymptomatic
 
-- **trtbps**: resting blood pressure (in mm Hg) (numerical)
+- **trtbps**: Presión arterial en reposo (en mm Hg) (Variable numérica continua)
 
-- **chol**: cholestoral in mg/dl fetched via BMI sensor (numerical)
+- **chol**: Colesterol en mg/dl obtenido via sensor BMI (Variable numérica continua)
 
-- **fbs**: (fasting blood sugar > 120 mg/dl) (1 = true; 0 = false; categorical)
 
-- **restecg**: resting electrocardiographic results (categorical)
+- **fbs**: Nivel de azúcar en sangre en ayunas (> 120 mg/dl, 1 = verdadero; 0 = falso). (Variable categórica binaria)
+
+- **restecg**: Resultados electrocardiográficos en reposo. (Variable categórica ordinal)
 
     - Value 0: normal
     
@@ -99,15 +102,15 @@ Las variables que encontramos en el dataset, según la descripción en *kaggle*:
     
     - Value 2: showing probable or definite left ventricular hypertrophy by Estes' criteria
 
-- **thalachh**: maximum heart rate achieved
+- **thalachh**: Máxima frecuencia cardíaca alcanzada. (Variable numérica continua)
 
-- **exng**: exercise induced angina (1 = yes; 0 = no; categoric)
+- **exng**: Angina inducida por ejercicio (1 = sí; 0 = no). (Variable categórica binaria)
 
-- **oldpeak**: Previous peak, changes in the ST segment on an ECG
+- **oldpeak**: Pico anterior, cambios en el segmento ST en un ECG (Variable numérica continua)
 
-- **slp**: The Slope of The Peak Exercise ST Segment
+- **slp**: La pendiente del segmento ST en el pico de ejercicio (Variable numérica continua)
 
-- **caa**: number of major vessels (0-4) (categorical)
+- **caa**: Número de vasos principales coloreados por fluoroscopia. (0-4) (categorical)
 
 - **thall**: maximum heart rate achieved (numerical)
 
