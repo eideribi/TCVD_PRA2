@@ -107,32 +107,13 @@ Las variables que encontramos en el dataset, según la descripción en *kaggle*:
 
 - **slp**: The Slope of The Peak Exercise ST Segment
 
-- **caa**: number of major vessels (0-4) (integer)
+- **caa**: number of major vessels (0-4) (categorical)
 
 - **thall**: maximum heart rate achieved (numerical)
 
 - **output**: 0= less chance of heart attack 1= more chance of heart attack (categorical)
 
-```{r}
-# Data types
 
-data <- heart_attack_data %>% 
-  mutate(
-    sex = factor(sex, levels=c(1,0),labels = c("male","female")),
-    cp = factor(cp,
-                levels=c(0,1,2,3),
-                labels=c("typical angina","atypical angina","non-anginal pain","asymptomatic")),
-    fbs = factor(fbs,levels=c(0,1),labels = c(F,T)),
-    restecg = factor(restecg,levels = c(0,1,2),
-                     labels = c("normal","ST-T wave abnormality","left ventricular hypertrophy")),
-    exng = factor(exng),
-    slp = factor(slp,levels = c(0,1,2),
-                 labels = c("unsloping","flat","downsloping")),
-    caa = as.integer(caa),
-    output = factor(output,levels=c(0,1),
-                    labels = c("less chance of heart attack","more chance of heart attack"))
-  )
-```
 ¿Por qué es importante y qué pregunta/problema
 pretende responder?
 
@@ -151,7 +132,33 @@ head(data) %>%
 ```
 # Limpieza de los datos
 
-https://www.kaggle.com/code/tumpanjawat/heart-attack-eda-cluster-8-ml-models
+Primero asignamos los tipos de datos a cada variable. En los **[comentarios](https://www.kaggle.com/datasets/rashikrahmanpritom/heart-attack-analysis-prediction-dataset/discussion/329925)** del dataset, hemos encontrado definiciones de los campos que nos ayudan a determinar el tipo de los datos:
+```{r}
+# Data types
+
+data <- heart_attack_data %>% 
+  mutate(
+    sex = factor(sex, levels=c(1,0),labels = c("male","female")),
+    cp = factor(cp,
+                levels=c(0,1,2,3),
+                labels=c("typical angina","atypical angina","non-anginal pain","asymptomatic")),
+    fbs = factor(fbs,levels=c(0,1),labels = c(F,T)),
+    restecg = factor(restecg,levels = c(0,1,2),
+                     labels = c("normal","ST-T wave abnormality","left ventricular hypertrophy")),
+    exng = factor(exng),
+    slp = factor(slp,levels = c(0,1,2),
+                 labels = c("unsloping","flat","downsloping")),
+    caa = factor(caa),
+    thall = factor(thall, 
+                   levels = c(1,2,3),
+                   labels = c("fixed defect","normal","reversable defect")),
+    output = factor(output,levels=c(0,1),
+                    labels = c("less chance of heart attack","more chance of heart attack"))
+  )
+```
+Hacemos un resumen de los datos para identificar posibles valores nulos o atípicos. Esta tabla también nos permite entender los rangos en los que se mueven las variables.
+
+También revisaremos si hay registros repetidos.
 ```{r}
 # Summary
 summary(data) 
@@ -165,50 +172,29 @@ data <- data %>%
   unique()
 
 ```
-## ¿Los datos contienen ceros o elementos vacíos? Gestiona cada uno de
-estos casos.
-```{r}
-for(col in colnames(data)){
-  print(paste0("Num. of Nas in ",col,": ", length(which(is.na(data$col)))))
-}
-```
+## ¿Los datos contienen ceros o elementos vacíos? 
 
-## Identifica y gestiona los valores extremos.
-Distribución de las variables numéricas:
-```{r}
-# Boxplots
-data_num %>% 
-pivot_longer(colnames(data_num)) %>% 
-  as.data.frame() %>% 
-  ggplot(aes(y = value)) +    # Draw each column as histogram
-  geom_boxplot(fill = "#404080") + 
-  theme_minimal() +
-  facet_wrap(~ name, scales = "free")
+<!-- https://www.kaggle.com/datasets/rashikrahmanpritom/heart-attack-analysis-prediction-dataset/discussion/329925 -->
+Representamos las distribuciones de las variables:
 
 
-# outliers
-boxplot.stats(data_num$oldpeak)$out
-
-```
-# Análisis de los datos
-
-## Selección de los grupos de datos que se quieren analizar/comparar (p.
-ej., si se van a comparar grupos de datos, ¿cuáles son estos grupos y
-qué tipo de análisis se van a aplicar?)
-
-
-```{r, fig.height = 10}
+```{r, echo = FALSE}
 ## Numerical data
 data_num <- data %>% 
   select_if(is.numeric)
+
+# Histograms
 data_num %>% 
 pivot_longer(colnames(data_num)) %>% 
   as.data.frame() %>% 
   ggplot(aes(x = value)) +    # Draw each column as histogram
   geom_histogram() + 
-  facet_wrap(~ name, scales = "free")
+  facet_wrap(~ name, scales = "free")+
+  labs(title="Variables numéricas")
 
-
+```
+En el caso de las variables numéricas
+```{r,echo = F}
 ## Categorical data
 data_cat <- data %>% 
   select_if(~class(.) == 'factor')
@@ -228,7 +214,78 @@ for(i in 1:length(cols)){
         axis.text.x=element_blank(),
         axis.ticks.x=element_blank())
 }
-do.call(grid.arrange,c(p, ncol = 2))
+do.call(grid.arrange,c(p, ncol = 2,top="Variables categóricas"))
+
+```
+Vemos que la variable *thall* tiene valores nulos. Podemos considerar que estos registros como normales, por lo que les asignaremos el valor 2:
+```{r}
+data <- data %>% 
+  mutate(
+    thall = factor(if_else(is.na(as.numeric(thall)),2,as.numeric(thall)), 
+                   levels = c(1,2,3),
+                   labels = c("fixed defect","normal","reversable defect"))
+  )
+
+```
+
+
+## Identifica y gestiona los valores extremos.
+Estudiaremos los boxplots de las variables numéricas para observar si existen valores atípicos:
+
+```{r, echo = FALSE}
+
+# Boxplots
+data_num %>% 
+pivot_longer(colnames(data_num)) %>% 
+  as.data.frame() %>% 
+  ggplot(aes(y = value)) +    # Draw each column as histogram
+  geom_boxplot(fill = "#404080", coef = 1.58) + 
+  theme_minimal() +
+  facet_wrap(~ name, scales = "free")
+```
+Vemos que todas las variables menos *age* muestran valores que están alejados de las medias y la mayoría de observaciones. Esta gráfica identifica como atípico el valor que $x < Q_1 - IQR\cdot 1.58$ o $x < Q_3 - IQR\cdot 1.58$ donde $IQR = Q_3 - Q_1$. La manera en la que vamos a tratarlos es asignarles el valor más cercano para que no sean considerados *outliers*.
+
+```{r}
+
+for (col in colnames(data_num)){
+  value = data[[col]][data[[col]] %in% boxplot.stats(data[[col]])$out]
+  res <- quantile(data[[col]], probs = c(0,0.25,0.5,0.75,1))
+  q1 <- res[[2]]
+  q3 <- res[[4]]
+  iqr <- q3 - q1
+  min_thshld <- q1 - 1.58*iqr
+  max_thshld <- q3 + 1.58*iqr
+  data[[col]][data[[col]] < min_thshld] = min_thshld
+  data[[col]][data[[col]] > max_thshld] = max_thshld
+}
+
+
+data %>% 
+  select_if(is.numeric) %>% 
+pivot_longer(colnames(data_num)) %>% 
+  as.data.frame() %>% 
+  ggplot(aes(y = value)) +    # Draw each column as histogram
+  geom_boxplot(fill = "#404080", coef = 1.58) + 
+  theme_minimal() +
+  facet_wrap(~ name, scales = "free")
+
+```
+
+```{r}
+
+# outliers
+boxplot.stats(data_num$oldpeak)$out
+
+```
+# Análisis de los datos
+
+## Selección de los grupos de datos que se quieren analizar/comparar (p.
+ej., si se van a comparar grupos de datos, ¿cuáles son estos grupos y
+qué tipo de análisis se van a aplicar?)
+
+
+```{r, fig.height = 10}
+
 
 ```
 ## Comprobación de la normalidad y homogeneidad de la varianza.
@@ -240,8 +297,7 @@ tres métodos de análisis diferentes.
 
 # Representación de los resultados a partir de tablas y gráficas.
 
-Este apartado se puede responder a lo largo de la práctica, sin necesidad de concentrar todas
-las representaciones en este punto de la práctica.
+Este apartado se puede responder a lo largo de la práctica, sin necesidad de concentrar todas las representaciones en este punto de la práctica.
 
 # Resolución del problema. 
 
