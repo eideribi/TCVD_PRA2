@@ -1,13 +1,15 @@
 ---
 title: 'TCVD Práctica 2: ¿Cómo realizar la limpieza y análisis de datos?'
-author: 
-   Alfonso Manuel Carvajal, Eider Ibiricu
-date: '`r format(Sys.Date(),"%e de %B, %Y")`'
-output: 
+author: "Alfonso Manuel Carvajal, Eider Ibiricu"
+date: "`r format(Sys.Date(),"%e de %B, %Y")`"
+output:
+  html_document:
+    toc: no
+    df_print: paged
   pdf_document:
     number_sections: yes
     toc: no
-    df_print: "kable"
+    df_print: kable
 bibliography: references.bib
 nocite: |
   @manualUOC, @awesome_tables, @RMarkdownCookbook, @ggplot2
@@ -296,6 +298,7 @@ corr <- round(cor(heart_attack_data), 1)
 ggcorrplot(corr,  type = "lower",
    lab = TRUE, p.mat = cor_pmat(heart_attack_data)) +
   labs(title="Correlación entre variables")
+
 ```
 
 Vemos que la variable *output* no tiene correlación significativa con *fbs* y *trtbps*, y con las que mayor correlación tiene son *caa*, *oldpeak*, *exng*, *thallachh* y *cp*.
@@ -320,7 +323,71 @@ data_compare <- data %>%
     caa
   )
 head(data_compare)
+
 ```
+
+```{r}
+
+#númericas
+#Shapiro-Wilk
+print(shapiro.test(data$oldpeak))
+print(leveneTest(oldpeak ~ output, data = data,))
+print(shapiro.test(data$thalachh))
+print(leveneTest(thalachh ~ output, data = data,))
+
+
+#categoricas
+# Variable "caa"
+table_caa <- table(data$caa, data$output)
+print(chisq.test(table_caa))
+
+# Variable "exng"
+table_exng <- table(data$exng, data$output)
+print(chisq.test(table_exng))
+
+# Variable "cp"
+table_cp <- table(data$cp, data$output)
+print(chisq.test(table_cp))
+
+
+```
+
+
+Respecto a oldpeak, podemos observer como no sigue una distribución normal, ni tienen igualdad de varianzas.
+
+Lo mismo se aplica a oldpeak, podemos observer como no sigue una distribución normal, ni tienen igualdad de varianzas.
+
+respecto
+
+Veamos cómo interpretar cada una de las pruebas que realizamos:
+
+### Normalidad --> Shapiro-Wilk
+
+1. Variable `oldpeak`: El valor p es 2.615e-16, que es menor que 0.05. Por lo tanto, rechazamos la hipótesis nula y concluimos que los datos de `oldpeak` no están normalmente distribuidos.
+
+2. Variable `thalachh`: El valor p es 9.187e-05, que es menor que 0.05. Por lo tanto, rechazamos la hipótesis nula y concluimos que los datos de `thalachh` no están normalmente distribuidos.
+
+### Homogeneidad de la varianza --> Levene
+
+1. Variable `oldpeak`: El valor p es 2.232e-08, que es menor que 0.05. Por lo tanto, rechazamos la hipótesis nula y concluimos que las varianzas de los grupos para `oldpeak` no son homogéneas.
+
+2. Variable `thalachh`: El valor p es 0.02553, que es menor que 0.05. Por lo tanto, rechazamos la hipótesis nula y concluimos que las varianzas de los grupos para `thalachh` no son homogéneas.
+
+En resumen, ninguna de las variables analizadas cumplen con el supuesto de normalidad y homogeneidad de varianza.
+
+### Prueba de chi-cuadrado
+
+
+1. Variable `cp`: El valor p es menor que 2.2e-16, que es menor que 0.05. Por lo tanto, rechazamos la hipótesis nula y concluimos que hay una asociación significativa entre las categorías de `cp`.
+
+2. Variable `caa`: El valor p es 3.771e-15, que es menor que 0.05. Por lo tanto, rechazamos la hipótesis nula y concluimos que hay una asociación significativa entre las categorías de `caa`.
+
+3. Variable `exng`: El valor p es 9.556e-14, que es menor que 0.05. Por lo tanto, rechazamos la hipótesis nula y concluimos que hay una asociación significativa entre las categorías de `exng`.
+
+En resumen, todas las variables categóricas parecen tener una relación significativa con la variable de resultado.
+
+
+
 ## Aplicación de pruebas estadísticas para comparar los grupos de datos.
 En función de los datos y el objetivo del estudio, aplicar pruebas de
 contraste de hipótesis, correlaciones, regresiones, etc. Aplicar al menos
