@@ -393,6 +393,36 @@ En función de los datos y el objetivo del estudio, aplicar pruebas de
 contraste de hipótesis, correlaciones, regresiones, etc. Aplicar al menos
 tres métodos de análisis diferentes.
 
+```{r}
+# Crear las variables dummy para 'cp', 'caa', 'thall'
+dummy_cp <- model.matrix(~ cp - 1, data = data)
+dummy_caa <- model.matrix(~ caa - 1, data = data)
+dummy_exng <- model.matrix(~ exng - 1, data = data)
+
+# Convertir las matrices a data frames
+dummy_cp_df <- as.data.frame(dummy_cp)
+dummy_caa_df <- as.data.frame(dummy_caa)
+dummy_exng_df <- as.data.frame(dummy_exng)
+
+# Añadir prefijo a las columnas para identificar a qué variable pertenecen
+colnames(dummy_cp_df) <- paste("cp", colnames(dummy_cp_df), sep = "_")
+colnames(dummy_caa_df) <- paste("caa", colnames(dummy_caa_df), sep = "_")
+colnames(dummy_exng_df) <- paste("exng", colnames(dummy_exng_df), sep = "_")
+
+# Unir los data frames de las variables dummy con el data frame original
+data2 <- cbind(data, dummy_cp_df, dummy_caa_df, dummy_exng_df)
+
+# Eliminar las columnas originales 'cp', 'caa', 'exng'
+data2$cp <- NULL
+data2$caa <- NULL
+data2$exng <- NULL
+
+# Mostrar las primeras filas del data frame
+head(data2)
+
+```
+
+
 # Representación de los resultados a partir de tablas y gráficas.
 
 Este apartado se puede responder a lo largo de la práctica, sin necesidad de concentrar todas las representaciones en este punto de la práctica.
