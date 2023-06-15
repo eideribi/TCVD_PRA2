@@ -1,7 +1,7 @@
 ---
 title: 'TCVD Práctica 2: ¿Cómo realizar la limpieza y análisis de datos?'
 author: "Alfonso Manuel Carvajal, Eider Ibiricu"
-date: "`r format(Sys.Date(),"%e de %B, %Y")`"
+date: "`r format(Sys.Date(),'%e de %B, %Y')`"
 output:
   html_document:
     toc: no
@@ -45,7 +45,9 @@ if(!require('gridExtra')) install.packages('gridExtra'); library('gridExtra')
 if(!require('formatR')) install.packages('formatR'); library('formatR')
 if(!require('devtools')) install.packages('devtools'); library('devtools')
 if(!require('kaggler')) devtools::install_github("ldurazo/kaggler")
-if(!require('ggcorrplot')) install.packages('ggcorrplot'); library('ggcorrplot')
+if(!require('ggcorrplot')) install.packages('ggcorrplot'); if(!require('car')) install.packages('car'); library('car')
+if(!require('patchwork')) install.packages('patchwork'); library('patchwork')
+
 ```
 # Descripción del dataset
 
@@ -320,63 +322,112 @@ data_compare <- data %>%
     exng,
     oldpeak,
     slp,
-    caa
+    caa,
+    output
   )
 head(data_compare)
 
 ```
 
-```{r}
+### Normalidad
+
+Vamos a analizar si las variables numéricas tienen distribuciones normales. Para ello aplicamos el test *Shapiro-Wilk*:
+```{r, echo = FALSE}
 
 #númericas
+
 #Shapiro-Wilk -- Levene
-print(shapiro.test(data$oldpeak))
-print(leveneTest(oldpeak ~ output, data = data,))
-print(shapiro.test(data$thalachh))
-print(leveneTest(thalachh ~ output, data = data,))
+print(shapiro.test(data_compare$oldpeak))
+
+print(shapiro.test(data_compare$thalachh))
+
+print(shapiro.test(data_compare$age))
+
+(
+data_compare %>%
+ggplot(aes(sample = oldpeak)) +
+stat_qq() + stat_qq_line() +
+labs(title="Normal Q-Q plot \n de oldpeak")
+) + (
+data_compare %>%
+ggplot(aes(sample = thalachh)) +
+stat_qq() + stat_qq_line() +
+labs(title="Normal Q-Q plot \n de thalachh")
+) + (
+data_compare %>%
+ggplot(aes(sample = age)) +
+stat_qq() + stat_qq_line() +
+labs(title="Normal Q-Q plot \n de age")
+)
+```
+
+El test Shapiro-Wilk parte de la hipótesis de que la población está normalmente distribuida, por lo que si el resultado del p-valor es mayor que 0.05, podemos aceptar dicha hipótesis con un 95% de confianza.
+
+En el caso anterior, vemos que no se puede aceptar que tanto *oldpeak* como *thalachh* estén normalmente distribuidas.
+
+Podemos visualizar que las medias por los dos grupos objetivo no son iguales:
+
+```{r, echo = FALSE}
+(
+data_compare %>%
+  ggplot(aes(x=output, y=oldpeak, fill=output)) +
+  geom_boxplot(alpha = 0.5) +
+  scale_fill_manual(values=c("#404080","#69b3a2")) +
+  theme(legend.position = "none",axis.text.x = element_text(angle = 30, hjust = 1))+
+  ggtitle("Oldpeak by \n output group")
+) + (
+data_compare %>%
+  ggplot(aes(x=output, y=thalachh, fill=output)) +
+  geom_boxplot(alpha = 0.5) +
+  scale_fill_manual(values=c("#404080","#69b3a2")) +
+  theme(legend.position = "none",axis.text.x = element_text(angle = 30, hjust = 1))+
+  ggtitle("thalachh by \n output group")
+) + (
+data_compare %>%
+  ggplot(aes(x=output, y=age, fill=output)) +
+  geom_boxplot(alpha = 0.5) +
+  scale_fill_manual(values=c("#404080","#69b3a2")) +
+  theme(legend.position = "none",axis.text.x = element_text(angle = 30, hjust = 1))+
+  ggtitle("age by \n output group"))
+```
+
+### Homogeneidad de la varianza 
+
+Aplicando el test de Levene, analizamos si las varianzas de los grupos de la variable objetivo son homogéneas para las tres variables numéricas que estamos analizando:
+```{r}
+print(leveneTest(oldpeak ~ output, data = data_compare,))
+print(leveneTest(thalachh ~ output, data = data_compare,))
+print(leveneTest(age ~ output, data = data_compare,))
+```
+En los tres casos, obtenemos que $p_{value} < 0.05$, por lo que rechazamos la hipótesis nula y concluímos que ninguna tiene varianzas homogeneas dentro de los grupos.
+
+En resumen, ninguna de las variables analizadas cumplen con el supuesto de normalidad y homogeneidad de varianza.
 
 
+
+
+## Aplicación de pruebas estadísticas para comparar los grupos de datos.
+
+### Prueba de chi-cuadrado
+
+AHora vamos a analizar la correlación entre las variables categóricas y la variable objetivo mediante el test *Chi-cuadrado*, el cual indica si existe correlación significativa entre dos variables cualitativas.
+
+```{r}
 #categoricas Chi-quadrado
 # Variable "caa"
-table_caa <- table(data$caa, data$output)
+table_caa <- table(data_compare$caa, data_compare$output)
 print(chisq.test(table_caa))
 
 # Variable "exng"
-table_exng <- table(data$exng, data$output)
+table_exng <- table(data_compare$exng, data_compare$output)
 print(chisq.test(table_exng))
 
 # Variable "cp"
-table_cp <- table(data$cp, data$output)
+table_cp <- table(data_compare$cp, data_compare$output)
 print(chisq.test(table_cp))
 
 
 ```
-
-
-Respecto a oldpeak, podemos observer como no sigue una distribución normal, ni tienen igualdad de varianzas.
-
-Lo mismo se aplica a oldpeak, podemos observer como no sigue una distribución normal, ni tienen igualdad de varianzas.
-
-respecto
-
-Veamos cómo interpretar cada una de las pruebas que realizamos:
-
-### Normalidad --> Shapiro-Wilk
-
-1. Variable `oldpeak`: El valor p es 2.615e-16, que es menor que 0.05. Por lo tanto, rechazamos la hipótesis nula y concluimos que los datos de `oldpeak` no están normalmente distribuidos.
-
-2. Variable `thalachh`: El valor p es 9.187e-05, que es menor que 0.05. Por lo tanto, rechazamos la hipótesis nula y concluimos que los datos de `thalachh` no están normalmente distribuidos.
-
-### Homogeneidad de la varianza --> Levene
-
-1. Variable `oldpeak`: El valor p es 2.232e-08, que es menor que 0.05. Por lo tanto, rechazamos la hipótesis nula y concluimos que las varianzas de los grupos para `oldpeak` no son homogéneas.
-
-2. Variable `thalachh`: El valor p es 0.02553, que es menor que 0.05. Por lo tanto, rechazamos la hipótesis nula y concluimos que las varianzas de los grupos para `thalachh` no son homogéneas.
-
-En resumen, ninguna de las variables analizadas cumplen con el supuesto de normalidad y homogeneidad de varianza.
-
-### Prueba de chi-cuadrado
-
 
 1. Variable `cp`: El valor p es menor que 2.2e-16, que es menor que 0.05. Por lo tanto, rechazamos la hipótesis nula y concluimos que hay una asociación significativa entre las categorías de `cp`.
 
@@ -387,43 +438,27 @@ En resumen, ninguna de las variables analizadas cumplen con el supuesto de norma
 En resumen, todas las variables categóricas parecen tener una relación significativa con la variable de resultado.
 
 
+### Modelo de regresión logística
 
-## Aplicación de pruebas estadísticas para comparar los grupos de datos.
-En función de los datos y el objetivo del estudio, aplicar pruebas de
-contraste de hipótesis, correlaciones, regresiones, etc. Aplicar al menos
-tres métodos de análisis diferentes.
+Al tratarse de una variable objetivo de dos clases, vamos ajustar un modelo de regresión logística. 
 
 ```{r}
 # wilcox oldpeak
-res <- wilcox.test(oldpeak ~ output, data = data)
+res <- wilcox.test(oldpeak ~ output, data = data_compare)
 print(res)
 # kruskal thalachh
-res <- kruskal.test(thalachh ~ output, data = data)
+res <- kruskal.test(thalachh ~ output, data = data_compare)
 print(res)
 
 # Regresión logística utilizando 'cp', 'caa' y 'exng' como predictores
-model <- glm(output ~ cp + caa + exng, data = data, family = binomial)
+model <- glm(output ~ cp + caa + exng, data = data_compare, family = binomial)
 summary(model)
 
 
 ```
 
+# Conclusiones
 
-# Representación de los resultados a partir de tablas y gráficas.
 
-Este apartado se puede responder a lo largo de la práctica, sin necesidad de concentrar todas las representaciones en este punto de la práctica.
-
-# Resolución del problema. 
-
-A partir de los resultados obtenidos, ¿cuáles son
-las conclusiones? ¿Los resultados permiten responder al problema?
-
-# Código. 
-
-Hay que adjuntar el código, preferiblemente en R, con el que se ha
-realizado la limpieza, análisis y representación de los datos. Si lo preferís,
-también podéis trabajar en Python.
-
-# Vídeo.
 
 
