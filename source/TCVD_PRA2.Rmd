@@ -329,14 +329,14 @@ head(data_compare)
 ```{r}
 
 #númericas
-#Shapiro-Wilk
+#Shapiro-Wilk -- Levene
 print(shapiro.test(data$oldpeak))
 print(leveneTest(oldpeak ~ output, data = data,))
 print(shapiro.test(data$thalachh))
 print(leveneTest(thalachh ~ output, data = data,))
 
 
-#categoricas
+#categoricas Chi-quadrado
 # Variable "caa"
 table_caa <- table(data$caa, data$output)
 print(chisq.test(table_caa))
@@ -394,6 +394,16 @@ contraste de hipótesis, correlaciones, regresiones, etc. Aplicar al menos
 tres métodos de análisis diferentes.
 
 ```{r}
+# wilcox oldpeak
+res <- wilcox.test(oldpeak ~ output, data = data)
+print(res)
+# kruskal thalachh
+res <- kruskal.test(thalachh ~ output, data = data)
+print(res)
+
+# Regresión logística utilizando 'cp', 'caa' y 'exng' como predictores
+model <- glm(output ~ cp + caa + exng, data = data, family = binomial)
+summary(model)
 
 
 ```
