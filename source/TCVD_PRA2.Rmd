@@ -461,12 +461,12 @@ summary(model)
 
 Revisión de correlaciones: En nuestro análisis, descubrimos que 'output' no parece estar fuertemente ligado con 'fbs' o 'trtbps'. Sin embargo, observamos una fuerte relación entre 'output' y otras variables como 'caa', 'oldpeak', 'exng', 'thallachh' y 'cp'. Esto podría indicar que estas últimas variables tienen más relevancia para prever el riesgo de ataque cardíaco.
 
-Distribución y varianza de las variables: Según las pruebas de Shapiro-Wilk, 'oldpeak' y 'thalachh' no se distribuyen normalmente. Además, el test de Levene indica que la varianza entre 'oldpeak', 'thalachh' y 'age' no es uniforme. Este es un aspecto clave, ya que varios métodos estadísticos requieren una distribución normal y una varianza homogénea.
+Distribución y varianza de las variables: Según las pruebas de Shapiro-Wilk, 'oldpeak' y 'thalachh' no se distribuyen normalmente. Además, el test de Levene indica que la varianza entre 'oldpeak', 'thalachh' y 'age' no es uniforme. 
 
 Análisis de Chi-cuadrado: Según las pruebas de chi-cuadrado, existe una relación significativa entre 'output' y las variables categóricas 'cp', 'caa' y 'exng'.
 
 Regresión logística: Nuestro modelo sugiere que 'cp', 'caa' y 'exng' podrían ser buenos indicadores de 'output'. Por ejemplo, se encontró que diferentes tipos de angina ('cp') y la cantidad de vasos visibles en la fluoroscopia ('caa') tienen una relación significativa con el riesgo de ataque cardíaco. Además, la angina inducida por ejercicio ('exng') parece estar inversamente relacionada con 'output', lo que sugiere que su presencia podría disminuir la probabilidad de un ataque cardíaco.
 
-En resumen, 'cp', 'caa', 'exng', 'oldpeak' y 'thalachh' podrían ser importantes para predecir la probabilidad de un ataque cardíaco. Sin embargo, dado que ninguna de las variables cumple con las premisas de normalidad y varianza homogénea, estos hallazgos deben tomarse con cierto escepticismo. Sería prudente considerar técnicas estadísticas que no requieran estos supuestos para un análisis más confiable.
+En resumen, 'cp', 'caa', 'exng', 'oldpeak' y 'thalachh' podrían ser importantes para predecir la probabilidad de un ataque cardíaco. 
 
 
