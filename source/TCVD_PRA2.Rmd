@@ -3,9 +3,9 @@ title: 'TCVD Práctica 2: ¿Cómo realizar la limpieza y análisis de datos?'
 author: "Alfonso Manuel Carvajal, Eider Ibiricu"
 date: "`r format(Sys.Date(),'%e de %B, %Y')`"
 output:
-  html_document:
-    toc: no
-    df_print: paged
+  # html_document:
+  #   toc: no
+  #   df_print: paged
   pdf_document:
     number_sections: yes
     toc: no
@@ -469,4 +469,12 @@ Regresión logística: Nuestro modelo sugiere que 'cp', 'caa' y 'exng' podrían 
 
 En resumen, 'cp', 'caa', 'exng', 'oldpeak' y 'thalachh' podrían ser importantes para predecir la probabilidad de un ataque cardíaco. 
 
+```{r, echo = FALSE}
+write.csv2(data_compare,"data/heart_final.csv")
+```
 
+
+
+\newpage
+
+# References
